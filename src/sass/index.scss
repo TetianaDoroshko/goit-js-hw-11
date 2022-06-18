@@ -46,6 +46,7 @@
 .gallery {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
 }
 .gallery-link {
   text-decoration: none;

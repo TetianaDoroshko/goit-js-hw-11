@@ -16,6 +16,19 @@ let pagecounter = 1;
 let searchQuery = '';
 let totalPages = null;
 
+const options = {
+  rootMargin: '0px',
+  threshold: 0,
+};
+
+const observer = new IntersectionObserver((entries, observer) => {
+  entries.map(entry => {
+    if (entry.isIntersecting) {
+      loadMoreImages();
+    }
+  });
+}, options);
+
 refs.form.addEventListener('submit', searchImages);
 
 async function searchImages(event) {
@@ -46,22 +59,24 @@ async function searchImages(event) {
 
     totalPages = Math.ceil(collection.totalHits / 40);
     if (totalPages > 1) {
-      window.addEventListener('scroll', throttle(infinityScroll, 400));
+      // window.addEventListener('scroll', throttle(infinityScroll, 400));
+
+      observer.observe(refs.gallery.lastElementChild);
     }
   } catch (error) {
     console.log(error);
   }
 }
 
-function infinityScroll() {
-  const endOfPage = document.documentElement.getBoundingClientRect().bottom;
-  const bottomOfWindow = document.documentElement.clientHeight;
-  if (endOfPage <= bottomOfWindow + 600) {
-    if (pagecounter < totalPages) {
-      loadMoreImages();
-    }
-  }
-}
+// function infinityScroll() {
+//   const endOfPage = document.documentElement.getBoundingClientRect().bottom;
+//   const bottomOfWindow = document.documentElement.clientHeight;
+//   if (endOfPage <= bottomOfWindow + 600) {
+//     if (pagecounter < totalPages) {
+//       loadMoreImages();
+//     }
+//   }
+// }
 
 function clearGallery() {
   refs.gallery.innerHTML = '';
@@ -75,8 +90,11 @@ async function loadMoreImages() {
 
     if (pagecounter === totalPages) {
       Notify.info(`We're sorry, but you've reached the end of search results.`);
-      window.removeEventListener('scroll', throttle(infinityScroll, 400));
+      // window.removeEventListener('scroll', throttle(infinityScroll, 400));
+      observer.unobserve(refs.gallery.lastElementChild);
       return;
+    } else {
+      observer.observe(refs.gallery.lastElementChild);
     }
   } catch (error) {
     console.log(error);
